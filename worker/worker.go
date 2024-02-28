@@ -5,10 +5,11 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"time"
 
-	"github.com/negasus/haproxy-spoe-go/frame"
-	"github.com/negasus/haproxy-spoe-go/logger"
-	"github.com/negasus/haproxy-spoe-go/request"
+	"github.com/prodion23/haproxy-spoe-go/frame"
+	"github.com/prodion23/haproxy-spoe-go/logger"
+	"github.com/prodion23/haproxy-spoe-go/request"
 )
 
 const (
@@ -46,6 +47,12 @@ func (w *worker) close() {
 func (w *worker) run() error {
 
 	defer w.close()
+	timeStart := time.Now()
+
+	defer func() {
+		elapsed := time.Since(timeStart)
+		w.logger.Errorf("run function took %d ms\n", elapsed.Milliseconds())
+	}()
 
 	var f *frame.Frame
 
