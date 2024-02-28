@@ -45,18 +45,25 @@ func (w *worker) close() {
 }
 
 func (w *worker) run() error {
+	var f *frame.Frame
+
 	defer w.close()
 	timeStart := time.Now()
 
 	defer func() {
 		elapsed := time.Since(timeStart)
-		w.logger.Errorf("run function total execution took %d ms", elapsed.Milliseconds())
+
+		if f != nil {
+			w.logger.Errorf("StreamID: %d run function total execution took %d ms", f.StreamID, elapsed.Milliseconds())
+		} else {
+			w.logger.Errorf("NO STREAMID - run function total execution took %d ms", elapsed.Milliseconds())
+		}
 	}()
 
 	buf := bufio.NewReader(w.conn)
 
 	for {
-		f := frame.AcquireFrame()
+		f = frame.AcquireFrame()
 		readTimeStart := time.Now()
 
 		if err := f.Read(buf); err != nil {
