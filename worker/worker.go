@@ -56,7 +56,7 @@ func (w *worker) run() error {
 	buf := bufio.NewReader(w.conn)
 
 	for {
-		f = frame.AcquireFrame()
+		f := frame.AcquireFrame()
 		readTimeStart := time.Now()
 
 		if err := f.Read(buf); err != nil {
