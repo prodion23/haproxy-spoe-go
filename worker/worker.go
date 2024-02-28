@@ -45,35 +45,41 @@ func (w *worker) close() {
 }
 
 func (w *worker) run() error {
-
 	defer w.close()
 	timeStart := time.Now()
 
 	defer func() {
 		elapsed := time.Since(timeStart)
-		w.logger.Errorf("run function took %d ms\n", elapsed.Milliseconds())
+		w.logger.Errorf("run function total execution took %d ms", elapsed.Milliseconds())
 	}()
-
-	var f *frame.Frame
 
 	buf := bufio.NewReader(w.conn)
 
 	for {
 		f = frame.AcquireFrame()
 		readTimeStart := time.Now()
+
 		if err := f.Read(buf); err != nil {
-			frame.ReleaseFrame(f)
 			elapsedRead := time.Since(readTimeStart)
-			w.logger.Errorf("FRAME: %d read frame took %d ms\n", f.FrameID, elapsedRead.Milliseconds())
+			w.logger.Errorf("StreamID: %d, read operation took %d ms", f.StreamID, elapsedRead.Milliseconds())
+
+			frame.ReleaseFrame(f)
 			if err != io.EOF {
 				return fmt.Errorf("error read frame: %v", err)
 			}
 			return nil
 		}
+
+		// Time taken to read the frame
 		elapsedRead := time.Since(readTimeStart)
-		w.logger.Errorf("FRAME: %d read frame took %d ms\n", f.FrameID, elapsedRead.Milliseconds())
+		w.logger.Errorf("StreamID: %d, read operation completed in %d ms", f.StreamID, elapsedRead.Milliseconds())
+
+		// Switch case operation timing start
+		switchCaseTimeStart := time.Now()
+
 		switch f.Type {
 		case frame.TypeHaproxyHello:
+			helloTimeStart := time.Now()
 
 			if w.ready {
 				return fmt.Errorf("worker already ready, but got HaproxyHello frame")
@@ -90,11 +96,15 @@ func (w *worker) run() error {
 			}
 
 			w.engineID = f.EngineID
-
 			w.ready = true
-			continue
+
+			// Time taken for HaproxyHello processing
+			elapsedHello := time.Since(helloTimeStart)
+			w.logger.Errorf("StreamID: %d HaproxyHello processing took %d ms", f.StreamID, elapsedHello.Milliseconds())
 
 		case frame.TypeHaproxyDisconnect:
+			disconnectTimeStart := time.Now()
+
 			if !w.ready {
 				return fmt.Errorf("worker not ready, but got HaproxyDisconnect frame")
 			}
@@ -102,18 +112,32 @@ func (w *worker) run() error {
 			if err := w.sendAgentDisconnect(f, 0, "connection closed by server"); err != nil {
 				return fmt.Errorf("error send AgentDisconnect frame: %v", err)
 			}
+
 			frame.ReleaseFrame(f)
+			// Time taken for HaproxyDisconnect processing
+			elapsedDisconnect := time.Since(disconnectTimeStart)
+			w.logger.Errorf("StreamID: %d HaproxyDisconnect processing took %d ms", f.StreamID, elapsedDisconnect.Milliseconds())
 			return nil
 
 		case frame.TypeNotify:
+			notifyTimeStart := time.Now()
+
 			if !w.ready {
 				return fmt.Errorf("worker not ready, but got Notify frame")
 			}
 
 			go w.processNotifyFrame(f)
 
+			// Time taken to start processNotifyFrame go routine
+			elapsedNotify := time.Since(notifyTimeStart)
+			w.logger.ErrorF("StreamID: %d Starting processNotifyFrame took %d ms", f.StreamID, elapsedNotify.Milliseconds())
+
 		default:
 			w.logger.Errorf("unexpected frame type: %v", f.Type)
 		}
+
+		// Time taken for switch-case operation
+		elapsedSwitchCase := time.Since(switchCaseTimeStart)
+		w.logger.Infof("Switch-case operation took %d ms", elapsedSwitchCase.Milliseconds())
 	}
 }
