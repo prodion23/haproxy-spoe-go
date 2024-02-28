@@ -130,7 +130,7 @@ func (w *worker) run() error {
 
 			// Time taken to start processNotifyFrame go routine
 			elapsedNotify := time.Since(notifyTimeStart)
-			w.logger.ErrorF("StreamID: %d Starting processNotifyFrame took %d ms", f.StreamID, elapsedNotify.Milliseconds())
+			w.logger.Errorf("StreamID: %d Starting processNotifyFrame took %d ms", f.StreamID, elapsedNotify.Milliseconds())
 
 		default:
 			w.logger.Errorf("unexpected frame type: %v", f.Type)
@@ -138,6 +138,6 @@ func (w *worker) run() error {
 
 		// Time taken for switch-case operation
 		elapsedSwitchCase := time.Since(switchCaseTimeStart)
-		w.logger.Infof("Switch-case operation took %d ms", elapsedSwitchCase.Milliseconds())
+		w.logger.Errorf("Switch-case operation took %d ms", elapsedSwitchCase.Milliseconds())
 	}
 }
