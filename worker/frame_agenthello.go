@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"fmt"
 
-	"github.com/prodion23/haproxy-spoe-go/frame"
+	"github.com/negasus/haproxy-spoe-go/frame"
 )
 
 func (w *worker) sendAgentHello(haproxyHello *frame.Frame) error {

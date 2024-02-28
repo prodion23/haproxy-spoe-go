@@ -3,9 +3,9 @@ package frame
 import (
 	"sync"
 
-	"github.com/prodion23/haproxy-spoe-go/action"
-	"github.com/prodion23/haproxy-spoe-go/message"
-	"github.com/prodion23/haproxy-spoe-go/payload/kv"
+	"github.com/negasus/haproxy-spoe-go/action"
+	"github.com/negasus/haproxy-spoe-go/message"
+	"github.com/negasus/haproxy-spoe-go/payload/kv"
 )
 
 type Type byte

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/prodion23/haproxy-spoe-go/varint"
+	"github.com/negasus/haproxy-spoe-go/varint"
 )
 
 func (f *Frame) Read(src io.Reader) error {
