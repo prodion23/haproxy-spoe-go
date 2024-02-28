@@ -60,15 +60,18 @@ func (w *worker) run() error {
 
 	for {
 		f = frame.AcquireFrame()
-
+		readTimeStart := time.Now()
 		if err := f.Read(buf); err != nil {
 			frame.ReleaseFrame(f)
+			elapsedRead := time.Since(readTimeStart)
+			w.logger.Errorf("FRAME: %d read frame took %d ms\n", f.FrameID, elapsedRead.Milliseconds())
 			if err != io.EOF {
 				return fmt.Errorf("error read frame: %v", err)
 			}
 			return nil
 		}
-
+		elapsedRead := time.Since(readTimeStart)
+		w.logger.Errorf("FRAME: %d read frame took %d ms\n", f.FrameID, elapsedRead.Milliseconds())
 		switch f.Type {
 		case frame.TypeHaproxyHello:
 
