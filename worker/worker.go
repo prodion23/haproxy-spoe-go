@@ -81,9 +81,6 @@ func (w *worker) run() error {
 		elapsedRead := time.Since(readTimeStart)
 		w.logger.Errorf("StreamID: %d, read operation completed in %d ms", f.StreamID, elapsedRead.Milliseconds())
 
-		// Switch case operation timing start
-		switchCaseTimeStart := time.Now()
-
 		switch f.Type {
 		case frame.TypeHaproxyHello:
 			helloTimeStart := time.Now()
@@ -142,9 +139,5 @@ func (w *worker) run() error {
 		default:
 			w.logger.Errorf("unexpected frame type: %v", f.Type)
 		}
-
-		// Time taken for switch-case operation
-		elapsedSwitchCase := time.Since(switchCaseTimeStart)
-		w.logger.Errorf("Switch-case operation took %d ms", elapsedSwitchCase.Milliseconds())
 	}
 }
