@@ -52,12 +52,14 @@ func (w *worker) run() error {
 
 	defer func() {
 		elapsed := time.Since(timeStart)
-
-		if f != nil {
-			w.logger.Errorf("StreamID: %d run function total execution took %d ms", f.StreamID, elapsed.Milliseconds())
-		} else {
-			w.logger.Errorf("NO STREAMID - run function total execution took %d ms", elapsed.Milliseconds())
+		if elapsed.Milliseconds() > 1000 {
+			if f != nil {
+				w.logger.Errorf("StreamID: %d run function total execution took %d ms", f.StreamID, elapsed.Milliseconds())
+			} else {
+				w.logger.Errorf("NO STREAMID - run function total execution took %d ms", elapsed.Milliseconds())
+			}
 		}
+
 	}()
 
 	buf := bufio.NewReader(w.conn)
@@ -68,8 +70,9 @@ func (w *worker) run() error {
 
 		if err := f.Read(buf); err != nil {
 			elapsedRead := time.Since(readTimeStart)
-			w.logger.Errorf("StreamID: %d, read operation took %d ms", f.StreamID, elapsedRead.Milliseconds())
-
+			if elapsedRead.Milliseconds() > 1000 {
+				w.logger.Errorf("StreamID: %d, read operation took %d ms", f.StreamID, elapsedRead.Milliseconds())
+			}
 			frame.ReleaseFrame(f)
 			if err != io.EOF {
 				return fmt.Errorf("error read frame: %v", err)
@@ -79,7 +82,9 @@ func (w *worker) run() error {
 
 		// Time taken to read the frame
 		elapsedRead := time.Since(readTimeStart)
-		w.logger.Errorf("StreamID: %d, read operation completed in %d ms", f.StreamID, elapsedRead.Milliseconds())
+		if elapsedRead.Milliseconds() > 1000 {
+			w.logger.Errorf("StreamID: %d, read operation completed in %d ms", f.StreamID, elapsedRead.Milliseconds())
+		}
 
 		switch f.Type {
 		case frame.TypeHaproxyHello:
@@ -104,7 +109,9 @@ func (w *worker) run() error {
 
 			// Time taken for HaproxyHello processing
 			elapsedHello := time.Since(helloTimeStart)
-			w.logger.Errorf("StreamID: %d HaproxyHello processing took %d ms", f.StreamID, elapsedHello.Milliseconds())
+			if elapsedHello.Milliseconds() > 1000 {
+				w.logger.Errorf("StreamID: %d HaproxyHello processing took %d ms", f.StreamID, elapsedHello.Milliseconds())
+			}
 
 		case frame.TypeHaproxyDisconnect:
 			disconnectTimeStart := time.Now()
@@ -120,7 +127,9 @@ func (w *worker) run() error {
 			frame.ReleaseFrame(f)
 			// Time taken for HaproxyDisconnect processing
 			elapsedDisconnect := time.Since(disconnectTimeStart)
-			w.logger.Errorf("StreamID: %d HaproxyDisconnect processing took %d ms", f.StreamID, elapsedDisconnect.Milliseconds())
+			if elapsedDisconnect.Milliseconds() > 1000 {
+				w.logger.Errorf("StreamID: %d HaproxyDisconnect processing took %d ms", f.StreamID, elapsedDisconnect.Milliseconds())
+			}
 			return nil
 
 		case frame.TypeNotify:
@@ -134,7 +143,9 @@ func (w *worker) run() error {
 
 			// Time taken to start processNotifyFrame go routine
 			elapsedNotify := time.Since(notifyTimeStart)
-			w.logger.Errorf("StreamID: %d Starting processNotifyFrame took %d ms", f.StreamID, elapsedNotify.Milliseconds())
+			if elapsedNotify.Milliseconds() > 1000 {
+				w.logger.Errorf("StreamID: %d Starting processNotifyFrame took %d ms", f.StreamID, elapsedNotify.Milliseconds())
+			}
 
 		default:
 			w.logger.Errorf("unexpected frame type: %v", f.Type)
