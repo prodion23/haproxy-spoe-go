@@ -31,7 +31,7 @@ func (w *worker) processNotifyFrame(f *frame.Frame) {
 
 	err := w.writeFrame(ackFrame)
 	if err != nil {
-		w.logger.Errorf("ack frame write failed: %v", err)
+		w.logger.Errorf("StreamID: %d ack frame write failed: %v", ackFrame.StreamID, err)
 	}
 }
 
