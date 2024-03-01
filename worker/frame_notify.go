@@ -3,12 +3,14 @@ package worker
 import (
 	"bytes"
 	"fmt"
+	"time"
 
 	"github.com/prodion23/haproxy-spoe-go/frame"
 	"github.com/prodion23/haproxy-spoe-go/request"
 )
 
 func (w *worker) processNotifyFrame(f *frame.Frame) {
+	timeStart := time.Now()
 	defer frame.ReleaseFrame(f)
 
 	req := request.AcquireRequest()
@@ -30,8 +32,9 @@ func (w *worker) processNotifyFrame(f *frame.Frame) {
 	ackFrame.Actions = req.Actions
 
 	err := w.writeFrame(ackFrame)
+	elapsed := time.Since(timeStart)
 	if err != nil {
-		w.logger.Errorf("StreamID: %d ack frame write failed: %v", ackFrame.StreamID, err)
+		w.logger.Errorf("StreamID: %d total_ms: %d, err: ack frame write failed: %v", ackFrame.StreamID, elapsed.Milliseconds(), err)
 	}
 }
 

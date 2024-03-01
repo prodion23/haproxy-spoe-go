@@ -139,7 +139,7 @@ func (w *worker) run() error {
 				return fmt.Errorf("worker not ready, but got Notify frame")
 			}
 
-			go w.processNotifyFrame(f)
+			w.processNotifyFrame(f)
 
 			// Time taken to start processNotifyFrame go routine
 			elapsedNotify := time.Since(notifyTimeStart)
